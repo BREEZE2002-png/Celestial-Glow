@@ -291,8 +291,9 @@
     </template>
 
     <script>
-        // --- Global state to hold user's birth info ---
+        // --- Global state ---
         let userInfo = {};
+        let apiKey = 'AIzaSyCMokq9UOzlQmwW7CSvLkyGmR8jOP3-cF8'; // API Key is now hardcoded
 
         // --- Starry Background Effect ---
         const canvas = document.getElementById('star-canvas');
@@ -444,6 +445,7 @@
 
             astroForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
                 const dob = document.getElementById('dob').value;
                 const hour = document.getElementById('tob-hour').value;
                 const minute = document.getElementById('tob-minute').value;
@@ -465,11 +467,9 @@
                     ### สุขภาพ
                     ### ข้อควรระวัง
                     ### หลักการทางโหราศาสตร์
-                    สำหรับหัวข้อย่อยที่สำคัญ ให้ใช้รูปแบบ: **[ICON:keyword] หัวข้อย่อย...** (keyword: ascendant, foundation, mars, jupiter, money).
                     ใช้ภาษาที่ไพเราะ เหมือนกำลังให้คำปรึกษา
                 `;
 
-                const apiKey = ""; 
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
@@ -477,7 +477,7 @@
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     const result = await response.json();
 
-                    if (!response.ok || result.error) {
+                    if (!response.ok || (result && result.error)) {
                         console.error("API Error:", result.error);
                         throw new Error(result.error ? result.error.message : 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
                     }
@@ -500,12 +500,6 @@
                             'ข้อควรระวัง': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
                             'หลักการทางโหราศาสตร์': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
                         };
-                        const subHeaderIconMap = {
-                            'default': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="subheader-icon"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>',
-                            'ascendant': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="subheader-icon"><path d="M12 17V3"></path><path d="m6 11 6-6 6 6"></path><path d="M19 21H5"></path></svg>',
-                            'foundation': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="subheader-icon"><path d="M2 22h20"></path><path d="M6 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"></path><path d="M14 18V8a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10"></path></svg>',
-                            'planet': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="subheader-icon"><path d="M18.36 17.64a9 9 0 1 1-12.72 0"></path><path d="M6.34 6.34a9 9 0 1 1 12.72 0"></path></svg>',
-                        };
                         
                         let formattedText = text.replace(/### (.*?)\n/g, (match, headerText) => {
                             const trimmedHeader = headerText.trim();
@@ -513,12 +507,7 @@
                             return `<div class="result-header">${iconSvg}<span>${trimmedHeader}</span></div>`;
                         });
 
-                        formattedText = formattedText.replace(/\*\*\[ICON:(.*?)] (.*?)\*\*/g, (match, keyword, subHeaderText) => {
-                            const iconSvg = subHeaderIconMap[keyword.toLowerCase()] || subHeaderIconMap['default'];
-                            return `<div class="result-subheader">${iconSvg}<span>${subHeaderText}</span></div>`;
-                        });
-
-                        formattedText = formattedText.replace(/\n/g, '<br>').replace(/<br><div class="result-header">/g, '<div class="result-header">').replace(/<br><div class="result-subheader">/g, '<div class="result-subheader">');
+                        formattedText = formattedText.replace(/\n/g, '<br>').replace(/<br><div class="result-header">/g, '<div class="result-header">');
 
                         astroResult.innerHTML = `<div class="result-box p-4 bg-slate-900/50 rounded-lg border border-slate-700">${formattedText}</div>`;
                     }
@@ -611,6 +600,12 @@
 
             questionForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                if (!apiKey) {
+                    apiKeyError.classList.remove('hidden');
+                    return;
+                }
+
                 const question = questionTextarea.value;
                 if (!question) return;
 
@@ -628,7 +623,6 @@
                     จงใช้ข้อมูลดวงชะตาเป็นแกนหลักในการวิเคราะห์และตอบคำถามนี้อย่างลึกซึ้งและเฉพาะเจาะจงสำหรับผู้ถามคนนี้โดยเฉพาะ
                 `;
                 
-                const apiKey = "";
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
