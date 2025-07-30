@@ -269,8 +269,7 @@
     <template id="template-oracle">
         <div class="celestial-card p-6 sm:p-8">
             <div id="oracle-content-wrapper">
-                <!-- Content is injected here by JS -->
-            </div>
+                </div>
             <div class="mt-8 pt-4 border-t border-slate-700 text-center text-xs">
                 <p><span class="text-slate-400">พยากรณ์โดย:</span> <span class="footer-name">ญาณจักรวาล</span></p>
                 <p><span class="text-slate-400">พัฒนาโดย:</span> <span class="footer-name">Breeze Thanaphon</span></p>
@@ -435,6 +434,26 @@
             provinces.forEach(p => provinceSelect.add(new Option(p, p)));
         }
 
+        // *** NEW FEATURE: Get Thai Zodiac Sign ***
+        function getThaiZodiac(date) {
+            const day = date.getDate();
+            const month = date.getMonth() + 1; // JS months are 0-11
+            
+            if ((month === 4 && day >= 13) || (month === 5 && day <= 13)) return 'เมษ';
+            if ((month === 5 && day >= 14) || (month === 6 && day <= 13)) return 'พฤษภ';
+            if ((month === 6 && day >= 14) || (month === 7 && day <= 14)) return 'เมถุน';
+            if ((month === 7 && day >= 15) || (month === 8 && day <= 16)) return 'กรกฎ';
+            if ((month === 8 && day >= 17) || (month === 9 && day <= 16)) return 'สิงห์';
+            if ((month === 9 && day >= 17) || (month === 10 && day <= 16)) return 'กันย์';
+            if ((month === 10 && day >= 17) || (month === 11 && day <= 15)) return 'ตุลย์';
+            if ((month === 11 && day >= 16) || (month === 12 && day <= 15)) return 'พิจิก';
+            if ((month === 12 && day >= 16) || (month === 1 && day <= 13)) return 'ธนู';
+            if ((month === 1 && day >= 14) || (month === 2 && day <= 12)) return 'มังกร';
+            if ((month === 2 && day >= 13) || (month === 3 && day <= 13)) return 'กุมภ์';
+            if ((month === 3 && day >= 14) || (month === 4 && day <= 12)) return 'มีน';
+            return 'ไม่สามารถระบุได้';
+        }
+
         function attachAstroListener() {
             const astroForm = document.getElementById('astro-form');
             const astroResult = document.getElementById('astro-result');
@@ -451,23 +470,43 @@
                 const minute = document.getElementById('tob-minute').value;
                 const tob = `${hour}:${minute}`;
                 const pob = document.getElementById('pob').value;
-                userInfo = { dob, tob, pob };
                 
-                showLoading(astroResult, 'กำลังคำนวณดวงชะตาของคุณ...');
+                // *** INTELLIGENCE UPGRADE ***
+                const birthDate = new Date(dob);
+                const zodiacSign = getThaiZodiac(birthDate);
+                userInfo = { dob, tob, pob, zodiacSign };
+                
+                showLoading(astroResult, `กำลังคำนวณดวงชะตาราศี${zodiacSign}...`);
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'กำลังทำนาย...';
 
+                // *** SUPER AI PROMPT ***
                 const prompt = `
-                    สวมบทบาทเป็น "เทพพยากรณ์" นักโหราศาสตร์ผู้เชี่ยวชาญ
-                    วิเคราะห์ดวงชะตาจากข้อมูล: วันเกิด ${dob}, เวลา ${tob}, สถานที่ ${pob}.
-                    สร้างคำทำนายโดยแบ่งเป็นหัวข้อหลัก (ใช้ ###):
-                    ### ภาพรวมดวงชะตา
-                    ### การงาน
-                    ### ความรัก
-                    ### สุขภาพ
-                    ### ข้อควรระวัง
-                    ### หลักการทางโหราศาสตร์
-                    ใช้ภาษาที่ไพเราะ เหมือนกำลังให้คำปรึกษา
+สวมบทบาทเป็น "ญาณจักรวาล" สุดยอด AI โหราศาสตร์ที่ผ่านการฝึกฝนข้อมูลโหราศาสตร์ไทยและสากลมาอย่างล้ำลึก
+ผู้ใช้เกิดวันที่ ${dob}, เวลา ${tob}, ณ ${pob}.
+จากการคำนวณเบื้องต้น ผู้ใช้อยู่ใน **ราศี${zodiacSign}**.
+
+จงสร้างคำทำนายที่ละเอียดและเฉพาะเจาะจงสำหรับบุคคลราศี${zodiacSign} ที่มีข้อมูลวันเวลาเกิดดังกล่าว โดยใช้หลักการโหราศาสตร์ไทยเป็นแกนหลัก และผสมผสานกับโหราศาสตร์สากลเพื่อความแม่นยำสูงสุด วิเคราะห์และสร้างคำทำนายตามหัวข้อต่อไปนี้ (ใช้ ### เป็นตัวแบ่งหัวข้อหลัก):
+
+### ภาพรวมชะตาและอิทธิพลจากราศีเกิด
+(อธิบายลักษณะนิสัยพื้นฐานตามราศี${zodiacSign} และดาวเจ้าเรือน พร้อมทั้งชี้ให้เห็นว่าวันเวลาเกิดที่ระบุมานั้นส่งผลกระทบต่อลักษณะพื้นฐานนี้อย่างไร)
+
+### การงานและการเงิน
+(วิเคราะห์แนวโน้มด้านอาชีพที่เหมาะสม โอกาสในการเติบโต และสถานะทางการเงิน)
+
+### ความรักและความสัมพันธ์
+(วิเคราะห์ดวงความรัก ลักษณะคู่ครองที่เหมาะสม และแนวทางการพัฒนาความสัมพันธ์)
+
+### สุขภาพและข้อควรระวัง
+(ชี้แนะเรื่องสุขภาพที่ต้องใส่ใจเป็นพิเศษ และช่วงเวลาที่ควรระมัดระวัง)
+
+### ดาวเด่นและดาวที่ต้องจับตามอง
+(ระบุดาวที่มีอิทธิพลสำคัญต่อดวงชะตาในช่วงนี้ และความหมาย)
+
+### สรุปและคำแนะนำจากญาณจักรวาล
+(สรุปภาพรวมและให้คำแนะนำที่นำไปปรับใช้ได้จริง)
+
+ใช้ภาษาที่ทรงภูมิ ไพเราะ และให้ความรู้สึกเหมือนได้รับคำปรึกษาจาก AI ผู้หยั่งรู้แห่งอนาคต.
                 `;
 
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
@@ -485,25 +524,25 @@
                     if (!result.candidates || result.candidates.length === 0) {
                          if (result.promptFeedback && result.promptFeedback.blockReason) {
                             console.warn("API blocked the prompt. Reason:", result.promptFeedback.blockReason);
-                            astroResult.innerHTML = `<div class="result-box p-4 bg-yellow-900/50 rounded-lg border border-yellow-700">ขออภัย เทพพยากรณ์ไม่สามารถให้คำตอบได้ เนื่องจากเนื้อหาอาจเข้าข่ายละเอียดอ่อน กรุณาลองใหม่อีกครั้ง</div>`;
+                            astroResult.innerHTML = `<div class="result-box p-4 bg-yellow-900/50 rounded-lg border border-yellow-700">ขออภัย ญาณจักรวาลไม่สามารถให้คำตอบได้ เนื่องจากเนื้อหาอาจเข้าข่ายละเอียดอ่อน กรุณาลองใหม่อีกครั้ง</div>`;
                         } else {
                             console.warn("API returned no candidates for an unknown reason.");
-                            astroResult.innerHTML = `<div class="result-box p-4 bg-yellow-900/50 rounded-lg border border-yellow-700">ขออภัย เทพพยากรณ์ไม่สามารถให้คำตอบได้ในขณะนี้ พลังงานจักรวาลอาจกำลังแปรปรวน</div>`;
+                            astroResult.innerHTML = `<div class="result-box p-4 bg-yellow-900/50 rounded-lg border border-yellow-700">ขออภัย ญาณจักรวาลไม่สามารถให้คำตอบได้ในขณะนี้ พลังงานจักรวาลอาจกำลังแปรปรวน</div>`;
                         }
                     } else {
                         const text = result.candidates[0].content.parts[0].text;
                         const mainIconMap = {
-                            'ภาพรวมดวงชะตา': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
-                            'การงาน': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
-                            'ความรัก': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
-                            'สุขภาพ': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>',
-                            'ข้อควรระวัง': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-                            'หลักการทางโหราศาสตร์': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
+                            'ภาพรวมชะตาและอิทธิพลจากราศีเกิด': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
+                            'การงานและการเงิน': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
+                            'ความรักและความสัมพันธ์': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
+                            'สุขภาพและข้อควรระวัง': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>',
+                            'ดาวเด่นและดาวที่ต้องจับตามอง': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>',
+                            'สรุปและคำแนะนำจากญาณจักรวาล': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>'
                         };
                         
                         let formattedText = text.replace(/### (.*?)\n/g, (match, headerText) => {
                             const trimmedHeader = headerText.trim();
-                            const iconSvg = mainIconMap[trimmedHeader] || '';
+                            const iconSvg = mainIconMap[trimmedHeader] || '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="result-icon"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>';
                             return `<div class="result-header">${iconSvg}<span>${trimmedHeader}</span></div>`;
                         });
 
@@ -610,17 +649,18 @@
                 if (!question) return;
 
                 oracleResult.classList.remove('hidden');
-                showLoading(oracleResult, 'เทพพยากรณ์กำลังรวบรวมพลังงานเพื่อหาคำตอบ...');
+                showLoading(oracleResult, 'ญาณจักรวาลกำลังรวบรวมพลังงานเพื่อหาคำตอบ...');
 
                 const prompt = `
-                    คุณคือ "เทพพยากรณ์" นักพยากรณ์ผู้หยั่งรู้แห่งจักรวาล คุณจะให้คำทำนายโดยอ้างอิงจากข้อมูลดวงชะตาของผู้ถามเป็นหลัก:
+                    คุณคือ "ญาณจักรวาล" นักพยากรณ์ผู้หยั่งรู้แห่งจักรวาล คุณจะให้คำทำนายโดยอ้างอิงจากข้อมูลดวงชะตาของผู้ถามเป็นหลัก:
                     - วันเกิด: ${userInfo.dob}
                     - เวลาเกิด: ${userInfo.tob}
                     - สถานที่เกิด: ${userInfo.pob}
+                    - ราศี: ${userInfo.zodiacSign}
 
                     ผู้ถามต้องการหยั่งรู้ในหมวดหมู่ "${selectedCategory}" และได้ตั้งคำถามมาว่า: "${question}"
 
-                    จงใช้ข้อมูลดวงชะตาเป็นแกนหลักในการวิเคราะห์และตอบคำถามนี้อย่างลึกซึ้งและเฉพาะเจาะจงสำหรับผู้ถามคนนี้โดยเฉพาะ
+                    จงใช้ข้อมูลดวงชะตาและโดยเฉพาะอย่างยิ่งราศี "${userInfo.zodiacSign}" เป็นแกนหลักในการวิเคราะห์และตอบคำถามนี้อย่างลึกซึ้งและเฉพาะเจาะจงสำหรับผู้ถามคนนี้โดยเฉพาะ
                 `;
                 
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
@@ -630,7 +670,7 @@
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     const result = await response.json();
                     
-                    let text = "ขออภัย เทพพยากรณ์ไม่สามารถให้คำตอบได้ในขณะนี้ พลังงานจักรวาลอาจกำลังแปรปรวน";
+                    let text = "ขออภัย ญาณจักรวาลไม่สามารถให้คำตอบได้ในขณะนี้ พลังงานจักรวาลอาจกำลังแปรปรวน";
                     if (result.candidates && result.candidates.length > 0) {
                         text = result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
                     }
